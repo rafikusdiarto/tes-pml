@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import type { Entity } from '../types';
 
@@ -10,8 +10,9 @@ export default function EntityCRUD() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<Entity>>({});
+  
+  const [alertInfo, setAlertInfo] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-  // Mengambil data dari Backend
   const fetchEntities = async () => {
     try {
       const response = await axios.get(API_URL);
@@ -24,6 +25,13 @@ export default function EntityCRUD() {
   useEffect(() => {
     fetchEntities();
   }, []);
+
+  const showAlert = (type: 'success' | 'error', message: string) => {
+    setAlertInfo({ type, message });
+    setTimeout(() => {
+      setAlertInfo(null);
+    }, 3000);
+  };
 
   const handleOpenModal = (entity?: Entity) => {
     if (entity && entity.id) {
@@ -39,17 +47,16 @@ export default function EntityCRUD() {
   const handleSave = async () => {
     try {
       if (editingId) {
-        // PUT: Update data
-        await axios.put(`${API_URL}/${editingId}`, formData);
+        await axios.put(`${API_URL}${editingId}`, formData);
+        showAlert('success', 'Data berhasil diperbarui!');
       } else {
-        // POST: Tambah data baru
-        await axios.post(`${API_URL}/`, formData);
+        await axios.post(`${API_URL}`, formData);
+        showAlert('success', 'Data berhasil ditambahkan!');
       }
       setIsModalOpen(false);
-      fetchEntities(); // Refresh data setelah simpan
+      fetchEntities(); 
     } catch (error) {
-      console.error("Gagal menyimpan data:", error);
-      alert("Terjadi kesalahan saat menyimpan data.");
+      showAlert('error', 'Terjadi kesalahan saat menyimpan data.');
     }
   };
 
@@ -57,15 +64,31 @@ export default function EntityCRUD() {
     if (!confirm("Apakah Anda yakin ingin menghapus data ini?")) return;
     
     try {
-      await axios.delete(`${API_URL}/${id}`);
-      fetchEntities(); // Refresh data setelah hapus
+      await axios.delete(`${API_URL}${id}`);
+      showAlert('success', 'Data berhasil dihapus!');
+      fetchEntities(); 
     } catch (error) {
-      console.error("Gagal menghapus data:", error);
+      showAlert('error', 'Gagal menghapus data.');
     }
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto relative">
+      {/* Kustom Alert Notifikasi */}
+      {alertInfo && (
+        <div className={`fixed top-20 right-6 z-50 p-4 rounded-xl border shadow-2xl flex items-center gap-3 min-w-[300px] animate-bounce-in ${
+          alertInfo.type === 'success' 
+            ? 'bg-gray-900 border-[#00ae97]/50 text-[#00ae97]' 
+            : 'bg-gray-900 border-red-500/50 text-red-400'
+        }`}>
+          {alertInfo.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+          <span className="font-medium">{alertInfo.message}</span>
+          <button onClick={() => setAlertInfo(null)} className="ml-auto text-gray-400 hover:text-white">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-white">Manajemen Entitas</h1>
         <button 
@@ -98,7 +121,7 @@ export default function EntityCRUD() {
                   {entity.latitude}, {entity.longitude}
                 </td>
                 <td className="p-4 border-b border-gray-800">
-                  <span className={`px-2 py-1 rounded-full text-xs ${entity.status === 'active' ? 'bg-primary/20 text-primary' : 'bg-red-500/20 text-red-400'}`}>
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${entity.status === 'active' ? 'bg-primary/20 text-primary border border-primary/20' : 'bg-red-500/20 text-red-400 border border-red-500/20'}`}>
                     {entity.status.toUpperCase()}
                   </span>
                 </td>
@@ -187,7 +210,7 @@ export default function EntityCRUD() {
               <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-400 hover:text-white transition-colors">
                 Batal
               </button>
-              <button onClick={handleSave} className="bg-primary hover:bg-[#008f7b] text-white px-4 py-2 rounded-lg transition-colors">
+              <button onClick={handleSave} className="bg-primary hover:bg-[#008f7b] text-white px-4 py-2 rounded-lg transition-colors shadow-lg shadow-primary/20">
                 Simpan Data
               </button>
             </div>
