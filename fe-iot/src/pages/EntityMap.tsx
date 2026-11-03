@@ -32,14 +32,24 @@ export default function EntityMap() {
         console.error("Gagal mengambil data koordinat:", error);
       }
     };
+    
+    // Fetch data saat halaman pertama kali dimuat
     fetchEntities();
+
+    // Set interval auto-refresh setiap 3 menit (180.000 ms)
+    const intervalId = setInterval(() => {
+      fetchEntities();
+    }, 180000);
+
+    // Bersihkan interval ketika komponen dilepas (unmount)
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white">Peta Persebaran Entitas</h1>
-        <p className="text-gray-400">Pemantauan lokasi geografis secara real-time. Klik pin untuk melihat detail.</p>
+        <p className="text-gray-400">Pemantauan lokasi geografis secara real-time. Data diperbarui otomatis setiap 3 menit.</p>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden h-[600px] z-0 relative">

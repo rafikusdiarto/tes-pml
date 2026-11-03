@@ -103,7 +103,7 @@ export default function EntityCRUD() {
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-800/50">
             <tr>
-              <th className="p-4 text-gray-300 font-semibold border-b border-gray-700 w-16">ID</th>
+              {/* <th className="p-4 text-gray-300 font-semibold border-b border-gray-700 w-16">ID</th> */}
               <th className="p-4 text-gray-300 font-semibold border-b border-gray-700">Nama Entitas</th>
               <th className="p-4 text-gray-300 font-semibold border-b border-gray-700">Tipe</th>
               <th className="p-4 text-gray-300 font-semibold border-b border-gray-700">Koordinat</th>
@@ -114,7 +114,7 @@ export default function EntityCRUD() {
           <tbody>
             {entities.map(entity => (
               <tr key={entity.id} className="hover:bg-gray-800/30 transition-colors">
-                <td className="p-4 border-b border-gray-800 text-gray-400">{entity.id}</td>
+                {/* <td className="p-4 border-b border-gray-800 text-gray-400">{entity.id}</td> */}
                 <td className="p-4 border-b border-gray-800">{entity.name}</td>
                 <td className="p-4 border-b border-gray-800">{entity.type}</td>
                 <td className="p-4 border-b border-gray-800 text-gray-400 text-sm">
