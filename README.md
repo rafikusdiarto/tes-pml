@@ -33,7 +33,7 @@ Sistem pemantauan dan manajemen entitas geografis (IoT Devices, Vehicles, Facili
 
 ### 1. Setup Database
 1. Buka PostgreSQL dan buat *database* baru dengan nama `db_iot`.
-2. Di dalam folder `backend-iot`, buat file `.env` dan sesuaikan kredensialnya:
+2. Di dalam folder `be-iot`, buat file `.env` dan sesuaikan kredensialnya:
    ```env
    DB_HOST=localhost
    DB_USER=postgres
@@ -44,7 +44,7 @@ Sistem pemantauan dan manajemen entitas geografis (IoT Devices, Vehicles, Facili
    ```
 3. Jalankan migrasi *database*:
    ```bash
-   cd backend-iot
+   cd be-iot
    go run main.go migrate
    ```
 
@@ -52,12 +52,12 @@ Sistem pemantauan dan manajemen entitas geografis (IoT Devices, Vehicles, Facili
 Gunakan mode ini jika Anda ingin mengubah kode dengan fitur *Hot Reload*.
 - **Terminal 1 (Backend):**
   ```bash
-  cd backend-iot
+  cd be-iot
   go run main.go
   ```
 - **Terminal 2 (Frontend):**
   ```bash
-  cd frontend-iot
+  cd fe-iot
   npm install
   npm run dev
   ```
@@ -67,16 +67,16 @@ Buka `http://localhost:5173` di *browser*.
 Mode ini membungkus hasil *build* React ke dalam *public folder* Gin, sehingga frontend dan backend berjalan di port yang sama (8080).
 1. Masuk ke folder frontend dan jalankan *script deploy* (sesuaikan OS):
    ```bash
-   cd frontend-iot
+   cd fe-iot
    npm install
    npm run build
    
    # Untuk pengguna Windows/CMD, copy folder dist ke dalam public backend:
-   # rmdir /s /q ..\backend-iot\public & mkdir ..\backend-iot\public & xcopy dist\* ..\backend-iot\public\ /s /e /y
+   # rmdir /s /q ..\be-iot\public & mkdir ..\be-iot\public & xcopy dist\* ..\be-iot\public\ /s /e /y
    ```
 2. Jalankan server Backend:
    ```bash
-   cd backend-iot
+   cd be-iot
    go run main.go
    ```
 3. Buka `http://localhost:8080` di *browser*.
