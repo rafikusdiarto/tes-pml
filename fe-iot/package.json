@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "deploy": "npm run build && rmdir /s /q ..\\be-iot\\public 2>nul || true && mkdir ..\\be-iot\\public && xcopy dist\\* ..\\be-iot\\public\\ /E /Y"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.4",

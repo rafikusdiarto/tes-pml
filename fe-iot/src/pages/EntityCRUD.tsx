@@ -3,7 +3,7 @@ import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import axios from 'axios';
 import type { Entity } from '../types';
 
-const API_URL = 'http://localhost:8080/api/entities/';
+const API_URL = '/api/entities/';
 
 export default function EntityCRUD() {
   const [entities, setEntities] = useState<Entity[]>([]);

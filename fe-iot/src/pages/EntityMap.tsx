@@ -17,7 +17,7 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const API_URL = 'http://localhost:8080/api/entities/';
+const API_URL = '/api/entities/';
 
 export default function EntityMap() {
   const [entities, setEntities] = useState<Entity[]>([]);
