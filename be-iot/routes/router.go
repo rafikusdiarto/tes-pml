@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"be-iot/controllers"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -18,6 +19,14 @@ func SetupRouter() *gin.Engine {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
+	api := r.Group("/api/entities")
+	{
+		api.GET("/", controllers.GetEntities)
+		api.POST("/", controllers.CreateEntity)
+		api.PUT("/:id", controllers.UpdateEntity)
+		api.DELETE("/:id", controllers.DeleteEntity)
+	}
 
 	return r
 }

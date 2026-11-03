@@ -1,5 +1,5 @@
 export interface Entity {
-  id: string;
+  id?: number; // Ubah ke number dan jadikan opsional
   name: string;
   type: string;
   latitude: number;

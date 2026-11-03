@@ -1,22 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
-import type { Entity } from './../types';
+import axios from 'axios';
+import type { Entity } from '../types';
 
-
-// Data dummy sementara sebelum ada backend
-const initialData: Entity[] = [
-  { id: '1', name: 'Sensor Suhu Gedung A', type: 'IoT Device', latitude: -6.200000, longitude: 106.816666, status: 'active' },
-  { id: '2', name: 'Kendaraan Operasional B', type: 'Vehicle', latitude: -6.210000, longitude: 106.820000, status: 'inactive' },
-];
+const API_URL = 'http://localhost:8080/api/entities/';
 
 export default function EntityCRUD() {
-  const [entities, setEntities] = useState<Entity[]>(initialData);
+  const [entities, setEntities] = useState<Entity[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<Entity>>({});
 
+  // Mengambil data dari Backend
+  const fetchEntities = async () => {
+    try {
+      const response = await axios.get(API_URL);
+      setEntities(response.data || []);
+    } catch (error) {
+      console.error("Gagal mengambil data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchEntities();
+  }, []);
+
   const handleOpenModal = (entity?: Entity) => {
-    if (entity) {
+    if (entity && entity.id) {
       setFormData(entity);
       setEditingId(entity.id);
     } else {
@@ -26,17 +36,32 @@ export default function EntityCRUD() {
     setIsModalOpen(true);
   };
 
-  const handleSave = () => {
-    if (editingId) {
-      setEntities(entities.map(e => e.id === editingId ? { ...e, ...formData } as Entity : e));
-    } else {
-      setEntities([...entities, { ...formData, id: Date.now().toString() } as Entity]);
+  const handleSave = async () => {
+    try {
+      if (editingId) {
+        // PUT: Update data
+        await axios.put(`${API_URL}/${editingId}`, formData);
+      } else {
+        // POST: Tambah data baru
+        await axios.post(`${API_URL}/`, formData);
+      }
+      setIsModalOpen(false);
+      fetchEntities(); // Refresh data setelah simpan
+    } catch (error) {
+      console.error("Gagal menyimpan data:", error);
+      alert("Terjadi kesalahan saat menyimpan data.");
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setEntities(entities.filter(e => e.id !== id));
+  const handleDelete = async (id: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus data ini?")) return;
+    
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      fetchEntities(); // Refresh data setelah hapus
+    } catch (error) {
+      console.error("Gagal menghapus data:", error);
+    }
   };
 
   return (
@@ -51,11 +76,11 @@ export default function EntityCRUD() {
         </button>
       </div>
 
-      {/* Datatable Simple */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-800/50">
             <tr>
+              <th className="p-4 text-gray-300 font-semibold border-b border-gray-700 w-16">ID</th>
               <th className="p-4 text-gray-300 font-semibold border-b border-gray-700">Nama Entitas</th>
               <th className="p-4 text-gray-300 font-semibold border-b border-gray-700">Tipe</th>
               <th className="p-4 text-gray-300 font-semibold border-b border-gray-700">Koordinat</th>
@@ -66,34 +91,39 @@ export default function EntityCRUD() {
           <tbody>
             {entities.map(entity => (
               <tr key={entity.id} className="hover:bg-gray-800/30 transition-colors">
-                <td className="p-4 border-gray-800">{entity.name}</td>
-                <td className="p-4 border-gray-800">{entity.type}</td>
-                <td className="p-4 border-gray-800 text-gray-400 text-sm">
+                <td className="p-4 border-b border-gray-800 text-gray-400">{entity.id}</td>
+                <td className="p-4 border-b border-gray-800">{entity.name}</td>
+                <td className="p-4 border-b border-gray-800">{entity.type}</td>
+                <td className="p-4 border-b border-gray-800 text-gray-400 text-sm">
                   {entity.latitude}, {entity.longitude}
                 </td>
-                <td className="p-4 border-gray-800">
+                <td className="p-4 border-b border-gray-800">
                   <span className={`px-2 py-1 rounded-full text-xs ${entity.status === 'active' ? 'bg-primary/20 text-primary' : 'bg-red-500/20 text-red-400'}`}>
                     {entity.status.toUpperCase()}
                   </span>
                 </td>
-                <td className="p-4 border-gray-800 flex gap-3">
+                <td className="p-4 border-b border-gray-800 flex gap-3">
                   <button onClick={() => handleOpenModal(entity)} className="text-gray-400 hover:text-white transition-colors">
                     <Edit2 size={18} />
                   </button>
-                  <button onClick={() => handleDelete(entity.id)} className="text-gray-400 hover:text-red-400 transition-colors">
+                  <button onClick={() => entity.id && handleDelete(entity.id)} className="text-gray-400 hover:text-red-400 transition-colors">
                     <Trash2 size={18} />
                   </button>
                 </td>
               </tr>
             ))}
+            {entities.length === 0 && (
+              <tr>
+                <td colSpan={6} className="p-8 text-center text-gray-500">Belum ada data entitas.</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Modal Form */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-md p-6">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-md p-6 relative">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">{editingId ? 'Edit Entitas' : 'Tambah Entitas'}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white">

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Entity } from '../types';
 import L from 'leaflet';
 import { X } from 'lucide-react';
+import axios from 'axios';
 
 // Fix issue icon Leaflet di React
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -16,14 +17,23 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const entities: Entity[] = [
-  { id: '1', name: 'Sensor Suhu Gedung A', type: 'IoT Device', latitude: -6.200000, longitude: 106.816666, status: 'active' },
-  { id: '2', name: 'Kendaraan Operasional B', type: 'Vehicle', latitude: -6.210000, longitude: 106.820000, status: 'inactive' },
-];
+const API_URL = 'http://localhost:8080/api/entities/';
 
 export default function EntityMap() {
-  // State untuk menyimpan entitas yang sedang dipilih/diklik
+  const [entities, setEntities] = useState<Entity[]>([]);
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
+
+  useEffect(() => {
+    const fetchEntities = async () => {
+      try {
+        const response = await axios.get(API_URL);
+        setEntities(response.data || []);
+      } catch (error) {
+        console.error("Gagal mengambil data koordinat:", error);
+      }
+    };
+    fetchEntities();
+  }, []);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -34,8 +44,8 @@ export default function EntityMap() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden h-[600px] z-0 relative">
         <MapContainer 
-          center={[-6.200000, 106.816666]} 
-          zoom={13} 
+          center={[-7.2575, 112.7521]} // Titik tengah Surabaya
+          zoom={12} 
           scrollWheelZoom={true} 
           style={{ height: '100%', width: '100%', zIndex: 0 }}
         >
@@ -50,7 +60,6 @@ export default function EntityMap() {
               key={entity.id} 
               position={[entity.latitude, entity.longitude]}
               eventHandlers={{
-                // Menampilkan modal saat marker atau tooltip diklik
                 click: () => setSelectedEntity(entity)
               }}
             >
@@ -58,7 +67,6 @@ export default function EntityMap() {
                 permanent 
                 direction="top" 
                 offset={[0, -20]}
-                // Memberikan class dinamis berdasarkan status
                 className={entity.status === 'active' ? 'map-tooltip-active' : 'map-tooltip-inactive'}
               >
                 <span className="font-semibold text-sm cursor-pointer">{entity.name}</span>
@@ -68,7 +76,6 @@ export default function EntityMap() {
         </MapContainer>
       </div>
 
-      {/* Modal Detail Entitas */}
       {selectedEntity && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-md p-6 relative shadow-2xl">
